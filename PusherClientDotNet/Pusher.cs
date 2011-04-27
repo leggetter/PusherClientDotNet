@@ -197,10 +197,31 @@ namespace WindowsFormsApplication1
             return this;
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// send_local_event
-
+        public void SendLocalEvent(string event_name, Data event_data)
+        {
+            SendLocalEvent(event_name, event_data, null);
+        }
         public void SendLocalEvent(string event_name, Data event_data, string channel_name)
         {
+            //event_data = Pusher.DataDecorator(event_name, event_data); // todo
+            if (channel_name != null)
+            {
+                throw new Exception("Code hasn't been ported from Pusher - see comments in source code");
+                // JS doesn't seem to have "this.channel" anywhere but here...
+
+                //Channel channel = this.channel(channel_name);
+                //if (channel)
+                //{
+                //    channel.dispatch_with_all(event_name, event_data);
+                //}
+            }
+            else
+            {
+                // Bit hacky but these events won't get logged otherwise
+                Pusher.Log("Pusher : event recd (event,data) :", event_name, event_data);
+            }
+
+            this.global_channel.DispatchWithAll(event_name, event_data);
         }
 
         public void OnMessage(WebSocketEventArgs evt)
@@ -254,7 +275,7 @@ namespace WindowsFormsApplication1
             Pusher.Log("Pusher : Socket closed");
             if (this.connected)
             {
-                //this.send_local_event("pusher:connection_disconnected", {});
+                this.SendLocalEvent("pusher:connection_disconnected", new Data());
                 if (Pusher.allow_reconnect)
                 {
                     Pusher.Log("Pusher : Connection broken, trying to reconnect");
@@ -263,7 +284,7 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                //this.send_local_event("pusher:connection_failed", {});
+                this.SendLocalEvent("pusher:connection_failed", new Data());
                 this.RetryConnect();
             }
             this.connected = false;
