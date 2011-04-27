@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
         {
             SendEvent(event_name, data, null);
         }
-        public Pusher SendEvent(string event_name, Data data, Channel channel)
+        public Pusher SendEvent(string event_name, Data data, string channel)
         {
             Pusher.Log("Pusher : event sent (channel,event,data) : ", channel, event_name, data);
 
@@ -238,7 +238,7 @@ namespace WindowsFormsApplication1
 
         public void OnClose()
         {
-            //this.global_channel.dispatch('close', null);
+            this.global_channel.Dispatch("close", null);
             Pusher.Log("Pusher : Socket closed");
             if (this.connected)
             {
@@ -324,8 +324,8 @@ namespace WindowsFormsApplication1
 
             Pusher pusher;
             string name;
-            // this.callbacks = {};
-            // this.global_callbacks = {};
+            Dictionary<string, Callbacks> callbacks;
+            Callbacks global_callbacks;
             bool subscribed;
 
             public bool global;
@@ -334,14 +334,84 @@ namespace WindowsFormsApplication1
             {
                 this.pusher = pusher;
                 this.name = channel_name;
+                this.callbacks = new Dictionary<string, Callbacks>();
+                this.global_callbacks = new Callbacks();
                 this.subscribed = false;
             }
 
-            public void Authorize(Pusher pusher, Action<Data> data)
+            public void AcknowledgeSubscription(Data data)
             {
+                this.subscribed = true;
+            }
+
+            public Channel Bind(string event_name, Action<Data> callback)
+            {
+                if (!this.callbacks.ContainsKey(event_name))
+                    this.callbacks[event_name] = new Callbacks();
+                this.callbacks[event_name].Add(callback);
+                return this;
+            }
+
+            public Channel BindAll(Action<Data> callback)
+            {
+                this.global_callbacks.Add(callback);
+                return this;
+            }
+
+            public Channel Trigger(string event_name, Data data)
+            {
+                this.pusher.SendEvent(event_name, data, this.name);
+                return this;
+            }
+
+            public void DispatchWithAll(string event_name, Data data)
+            {
+                if (this.name != "pusher_global_channel")
+                {
+                    Pusher.Log("Pusher : event recd (channel,event,data)", this.name, event_name, data);
+                }
+                this.Dispatch(event_name, data);
+                this.DispatchGlobalCallbacks(event_name, data);
+            }
+
+            public void Dispatch(string event_name, Data event_data)
+            {
+                if (this.callbacks.ContainsKey(event_name))
+                {
+                    foreach (Action<Data> callback in this.callbacks[event_name])
+                    {
+                        callback(event_data);
+                    }
+                }
+                else if (!this.global)
+                {
+                    Pusher.Log("Pusher : No callbacks for " + event_name);
+                }
+            }
+
+            public void DispatchGlobalCallbacks(string event_name, Data event_data)
+            {
+                foreach (Action<Data> callback in this.global_callbacks)
+                {
+                    // Is this correct or not? The JS passes both params...
+                    callback(event_data);
+                }
+            }
+
+            public bool IsPrivate() { return false; }
+
+            public bool IsPresense() { return false; }
+
+            public void Authorize(Pusher pusher, Action<Data> callback)
+            {
+                callback(new Data());
             }
         }
 
+        public class Callbacks : List<Action<Data>>
+        {
+            public Callbacks() { }
+        }
         public class Data : Dictionary<string, object>
         {
             public Data() { }
