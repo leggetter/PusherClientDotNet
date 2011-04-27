@@ -60,7 +60,7 @@ namespace WindowsFormsApplication1
 
         static List<Pusher> instances = new List<Pusher>();
         
-        public Channel Channels(string name)
+        public Channel Channel(string name)
         {
             return this.channels[name];
         }
@@ -214,14 +214,11 @@ namespace WindowsFormsApplication1
             event_data = Pusher.DataDecorator(event_name, event_data);
             if (channel_name != null)
             {
-                throw new Exception("Code hasn't been ported from Pusher - see comments in source code");
-                // JS doesn't seem to have "this.channel" anywhere but here...
-
-                //Channel channel = this.channel(channel_name);
-                //if (channel)
-                //{
-                //    channel.dispatch_with_all(event_name, event_data);
-                //}
+                if (this.channels.ContainsKey(channel_name))
+                {
+                    Channel channel = this.Channel(channel_name);
+                    channel.DispatchWithAll(event_name, event_data);
+                }
             }
             else
             {
