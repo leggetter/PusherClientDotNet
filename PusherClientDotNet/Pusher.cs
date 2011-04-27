@@ -284,7 +284,7 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                this.SendLocalEvent("pusher:connection_failed", new Data());
+                this.SendLocalEvent("pusher:connection_failed", null);
                 this.RetryConnect();
             }
             this.connected = false;
@@ -292,7 +292,7 @@ namespace WindowsFormsApplication1
 
         public void OnOpen()
         {
-            //this.global_channel.dispatch('open', null);
+            this.global_channel.Dispatch("open", null);
         }
 
         // Pusher defaults
