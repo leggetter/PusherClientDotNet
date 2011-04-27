@@ -304,6 +304,24 @@ namespace WindowsFormsApplication1
 
         public class Channel
         {
+            public class Channels : Dictionary<string, Channel>
+            {
+                public Channels() { }
+                public Channel Add(string channel_name, Pusher pusher)
+                {
+                    if (!this.ContainsKey(channel_name))
+                    {
+                        var channel = /*Pusher.Channel.factory(channel_name, pusher)*/ new Channel("SALKSDJKLJFDSF");
+                        this[channel_name] = channel;
+                        return channel;
+                    }
+                    else
+                    {
+                        return this[channel_name];
+                    }
+                }
+            }
+
             public bool global;
             public Channel(string name)
             {
@@ -311,15 +329,6 @@ namespace WindowsFormsApplication1
 
             public void Authorize(Pusher pusher, Action<Data> data)
             {
-            }
-
-            public class Channels : Dictionary<string, Channel>
-            {
-                public Channels() { }
-                public Channel Add(string channel_name, Pusher pusher)
-                {
-                    return new Channel("SALKSDJKLJFDSF");
-                }
             }
         }
 
