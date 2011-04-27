@@ -94,8 +94,9 @@ namespace WindowsFormsApplication1
                 {
                     connectionTimeout.Stop();
                     Pusher.Log("Pusher : connection timeout after " + connectionTimeout.Interval + "ms");
+                    ws.Close();
                 };
-                ws.Close();
+                connectionTimeout.Start();
             }).Start();
 
             ws.OnData += (sender, e) =>
