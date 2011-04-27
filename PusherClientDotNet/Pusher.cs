@@ -225,14 +225,19 @@ namespace WindowsFormsApplication1
 //Pusher.data_decorator = function(event_name, event_data){ return event_data }; // wrap event_data before dispatching
         static bool allow_reconnect = true;
         static const string channel_auth_transport = "ajax";
-//Pusher.parser = function(data) {
-//  try {
-//    return JSON.parse(data);
-//  } catch(e) {
-//    Pusher.log("Pusher : data attribute not valid JSON - you may wish to implement your own Pusher.parser");
-//    return data;
-//  }
-//};
+
+        public object Parser(string data)
+        {
+            try
+            {
+                return JSON.parse(data);
+            }
+            catch
+            {
+                Pusher.Log("Pusher : data attribute not valid JSON - you may wish to implement your own Pusher.parser");
+                return data;
+            }
+        }
 
         static bool isReady = false;
         public void ready()
