@@ -209,22 +209,22 @@ namespace WindowsFormsApplication1
         }
 
         // Pusher defaults
-        static const string VERSION = "1.8.3";
+        const string VERSION = "1.8.3";
 
-        static const string host = "ws.pusherapp.com";
-        static const int ws_port = 80;
-        static const int wss_port = 443;
-        static const string channel_auth_endpoint = "/pusher/auth";
-        static const int connection_timeout = 5000;
-        static const string cdn_http = "http://js.pusherapp.com/";
-        static const string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
+        const string host = "ws.pusherapp.com";
+        const int ws_port = 80;
+        const int wss_port = 443;
+        const string channel_auth_endpoint = "/pusher/auth";
+        const int connection_timeout = 5000;
+        const string cdn_http = "http://js.pusherapp.com/";
+        const string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
         private static void Log(string message) { }
         private static void Log(string message, object message2) { }
         private static void Log(string message, object message2, object message3) { }
         private static void Log(string message, object message2, object message3, object message4) { }
 //Pusher.data_decorator = function(event_name, event_data){ return event_data }; // wrap event_data before dispatching
         static bool allow_reconnect = true;
-        static const string channel_auth_transport = "ajax";
+        const string channel_auth_transport = "ajax";
 
         public object Parser(string data)
         {
