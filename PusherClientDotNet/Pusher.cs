@@ -260,7 +260,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private class Data : Dictionary<string, object>
+        public class Data : Dictionary<string, object>
         {
             public Data() { }
         }
