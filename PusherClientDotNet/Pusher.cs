@@ -207,6 +207,11 @@ namespace WindowsFormsApplication1
             this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"], (string)paramss["channel"]);
         }
 
+        public void Reconnect()
+        {
+            new Thread(() => this.Connect()).Start();
+        }
+
         // Pusher defaults
         const string VERSION = "1.8.3";
 
