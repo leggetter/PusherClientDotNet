@@ -136,9 +136,17 @@ namespace WindowsFormsApplication1
             this.connection.Close();
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// bind
+        public Pusher Bind(string event_name, Action<Data> callback)
+        {
+            this.global_channel.Bind(event_name, callback);
+            return this;
+        }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// bind_all
+        public Pusher BindAll(string event_name, Action<Data> callback)
+        {
+            this.global_channel.BindAll(callback);
+            return this;
+        }
 
         public void SubscribeAll()
         {
