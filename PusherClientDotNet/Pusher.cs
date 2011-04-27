@@ -114,7 +114,19 @@ namespace WindowsFormsApplication1
             this.connection = ws;
         }
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////// toggle_secure
+        public void ToggleSecure()
+        {
+            if (this.secure == false)
+            {
+                this.secure = true;
+                Pusher.Log("Pusher : switching to wss:// connection");
+            }
+            else
+            {
+                this.secure = false;
+                Pusher.Log("Pusher : switching to ws:// connection");
+            };
+        }
 
         public void Disconnect()
         {
@@ -215,7 +227,7 @@ namespace WindowsFormsApplication1
             // Unless we're ssl only, try toggling between ws & wss
             if (!this.encrypted)
             {
-                //this.ToggleSecure();
+                this.ToggleSecure();
             }
 
             // Retry with increasing delay, with a maximum interval of 10s
