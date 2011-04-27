@@ -212,6 +212,25 @@ namespace WindowsFormsApplication1
             new Thread(() => this.Connect()).Start();
         }
 
+        public void RetryConnect()
+        {
+            // Unless we're ssl only, try toggling between ws & wss
+            if (!this.encrypted)
+            {
+                //this.ToggleSecure();
+            }
+
+            // Retry with increasing delay, with a maximum interval of 10s
+            var retry_delay = Math.Min(this.retry_counter * 1000, 10000);
+            Pusher.Log("Pusher : Retrying connection in " + retry_delay + "ms");
+            //var self = this;
+            //setTimeout(function() {
+            //  self.connect();
+            //}, retry_delay);
+
+            this.retry_counter = this.retry_counter + 1;
+        }
+
         // Pusher defaults
         const string VERSION = "1.8.3";
 
