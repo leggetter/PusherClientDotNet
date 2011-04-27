@@ -86,14 +86,14 @@ namespace WindowsFormsApplication1
 
             // Timeout for the connection to handle silently hanging connections
             // Increase the timeout after each retry in case of extreme latencies
+            System.Timers.Timer connectionTimeout = new System.Timers.Timer();
             new Thread(() =>
             {
-                System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-                timer.Interval = Pusher.connection_timeout + (this.retry_counter * 1000);
-                timer.Tick += (sender, e) =>
+                connectionTimeout.Interval = Pusher.connection_timeout + (this.retry_counter * 1000);
+                connectionTimeout.Elapsed += (sender, e) =>
                 {
-                    timer.Stop();
-                    Pusher.Log("Pusher : connection timeout after " + timer.Interval + "ms");
+                    connectionTimeout.Stop();
+                    Pusher.Log("Pusher : connection timeout after " + connectionTimeout.Interval + "ms");
                 };
                 ws.Close();
             }).Start();
