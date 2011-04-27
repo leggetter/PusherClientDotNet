@@ -322,9 +322,19 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            Pusher pusher;
+            string name;
+            // this.callbacks = {};
+            // this.global_callbacks = {};
+            bool subscribed;
+
             public bool global;
-            public Channel(string name)
+            public Channel(string channel_name) : this(channel_name, null) { }
+            public Channel(string channel_name, Pusher pusher)
             {
+                this.pusher = pusher;
+                this.name = channel_name;
+                this.subscribed = false;
             }
 
             public void Authorize(Pusher pusher, Action<Data> data)
