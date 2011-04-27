@@ -193,16 +193,16 @@ namespace WindowsFormsApplication1
         {
         }
 
-        public void OnMessage(WebSocketEventArgs e)
+        public void OnMessage(WebSocketEventArgs evt)
         {
-            Data paramss = /*JSON.parse(evt.data)*/ new Data();
+            Data paramss = JSON.parse(evt.TextData);
             if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
             if (paramss["data"] is string)
             {
-                //paramss["data"] = Pusher.parser(params.data);
+                paramss["data"] = Pusher.Parser((string)paramss["data"]);
             }
-            // Pusher.log("Pusher : received message : ", params)
+            Pusher.Log("Pusher : received message : ", paramss);
 
             this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"], (string)paramss["channel"]);
         }
