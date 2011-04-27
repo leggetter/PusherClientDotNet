@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.WebSockets;
 using System.Text;
 using System.Threading;
-using System.ServiceModel.WebSockets;
+using System.Web.Script.Serialization;
 
 namespace WindowsFormsApplication1
 {
@@ -242,6 +243,18 @@ namespace WindowsFormsApplication1
             }
         }
 
+        public class Channel
+        {
+            public bool global;
+            public Channel(string name)
+            {
+            }
+
+            public void Authorize(Pusher pusher, Action<Data> data)
+            {
+            }
+        }
+
         private class Data : Dictionary<string, object>
         {
             public Data() { }
@@ -254,15 +267,14 @@ namespace WindowsFormsApplication1
                 return new Channel("SALKSDJKLJFDSF");
             }
         }
-        public class Channel
-        {
-            public bool global;
-            public Channel(string name)
-            {
-            }
 
-            public void Authorize(Pusher pusher, Action<Data> data)
+        private static class JSON
+        {
+            static JavaScriptSerializer _serializer = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+
+            public static Data parse(string str)
             {
+                return (Data)_serializer.DeserializeObject(str);
             }
         }
     }
