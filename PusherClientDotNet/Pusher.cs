@@ -294,7 +294,7 @@ namespace WindowsFormsApplication1
         }
 
         static bool isReady = false;
-        public void ready()
+        public void Ready()
         {
             Pusher.isReady = true;
             for(var i = 0; i < Pusher.instances.Count; i++) {
