@@ -223,10 +223,17 @@ namespace WindowsFormsApplication1
             // Retry with increasing delay, with a maximum interval of 10s
             var retry_delay = Math.Min(this.retry_counter * 1000, 10000);
             Pusher.Log("Pusher : Retrying connection in " + retry_delay + "ms");
-            //var self = this;
-            //setTimeout(function() {
-            //  self.connect();
-            //}, retry_delay);
+            System.Timers.Timer retryTimer = new System.Timers.Timer();
+            new Thread(() =>
+            {
+                retryTimer.Interval = retry_delay;
+                retryTimer.Elapsed += (sender, e) =>
+                {
+                    retryTimer.Stop();
+                    this.Connect();
+                };
+                retryTimer.Start();
+            });
 
             this.retry_counter = this.retry_counter + 1;
         }
