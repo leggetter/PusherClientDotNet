@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
             this.secure = false;
             this.connected = false;
             this.retry_counter = 0;
-            if (options.ContainsKey("encrypted"))
+            if (options != null && options.ContainsKey("encrypted"))
                 this.encrypted = ((bool)this.options["encrypted"]) ? true : false;
             if(Pusher.isReady) this.Connect();
             Pusher.instances.Add(this);
