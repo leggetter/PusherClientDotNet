@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
         public void OnMessage(WebSocketEventArgs e)
         {
             Data paramss = /*JSON.parse(evt.data)*/ new Data();
-            if (paramss.ContainsKey("socket_id") && paramss["socket_id"] == this.socket_id) return;
+            if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
             if (paramss["data"] is string)
             {
