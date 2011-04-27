@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
         bool encrypted;
         WebSocket connection;
 
+        public Pusher(string application_key) : this(application_key, null) { }
         public Pusher(string application_key, Dictionary<string, object> options)
         {
             if (options != null)
@@ -39,23 +40,27 @@ namespace WindowsFormsApplication1
             if(Pusher.isReady) this.Connect();
             Pusher.instances.Add(this);
 
-  ////This is the new namespaced version
-  //this.bind('pusher:connection_established', function(data) {
-  //  this.connected = true;
-  //  this.retry_counter = 0;
-  //  this.socket_id = data.socket_id;
-  //  this.subscribeAll();
-  //}.scopedTo(this));
-  
-  //this.bind('pusher:connection_disconnected', function(){
-  //  for(var channel_name in this.channels.channels){
-  //    this.channels.channels[channel_name].disconnect()
-  //  }
-  //}.scopedTo(this));
+            //This is the new namespaced version
+            this.Bind("pusher:connection_established", (data) =>
+            {
+                this.connected = true;
+                this.retry_counter = 0;
+                this.socket_id = (string)data["socket_id"];
+                this.SubscribeAll();
+            }/*.scopedTo(this)*/);
 
-  //this.bind('pusher:error', function(data) {
-  //  Pusher.log("Pusher : error : " + data.message);
-  //});
+            this.Bind("pusher:connection_disconnected", (data) =>
+            {
+                foreach (string channel_name in this.channels.Keys.ToList<string>())
+                {
+                    this.channels[channel_name].Disconnect();
+                }
+            }/*.scopedTo(this)*/);
+
+            this.Bind("pusher:error", (data) =>
+            {
+                Pusher.Log("Pusher : error : " + (string)data["message"]);
+            });
         }
 
         static List<Pusher> instances = new List<Pusher>();
@@ -376,6 +381,8 @@ namespace WindowsFormsApplication1
                 this.global_callbacks = new Callbacks();
                 this.subscribed = false;
             }
+
+            public void Disconnect() { }
 
             public void AcknowledgeSubscription(Data data)
             {
