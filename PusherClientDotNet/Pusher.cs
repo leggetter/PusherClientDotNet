@@ -193,7 +193,7 @@ namespace WindowsFormsApplication1
             };
             if (channel != null) { payload["channel"] = channel; }
 
-            this.connection.SendMessage(""/*JSON.stringify(payload)*/);
+            this.connection.SendMessage(JSON.stringify(payload));
             return this;
         }
 
@@ -457,6 +457,11 @@ namespace WindowsFormsApplication1
             public static Data parse(string str)
             {
                 return (Data)_serializer.DeserializeObject(str);
+            }
+
+            public static string stringify(object obj)
+            {
+                return _serializer.Serialize(obj);
             }
         }
     }
