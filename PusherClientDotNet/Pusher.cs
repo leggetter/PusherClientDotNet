@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
 
         static List<Pusher> instances = new List<Pusher>();
         
-        public Channel Channel(string name)
+        public Channel GetChannel(string name)
         {
             return this.channels[name];
         }
@@ -221,7 +221,7 @@ namespace WindowsFormsApplication1
             {
                 if (this.channels.ContainsKey(channel_name))
                 {
-                    Channel channel = this.Channel(channel_name);
+                    Channel channel = this.GetChannel(channel_name);
                     channel.DispatchWithAll(event_name, event_data);
                 }
             }
@@ -462,7 +462,7 @@ namespace WindowsFormsApplication1
             public Data() { }
         }
 
-        private static class JSON
+        public static class JSON
         {
             static JavaScriptSerializer _serializer = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
 
