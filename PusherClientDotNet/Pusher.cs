@@ -99,19 +99,16 @@ namespace WindowsFormsApplication1
                 connectionTimeout.Start();
             }).Start();
 
-            ws.OnData += (sender, e) =>
-            {
-                OnMessage(e);
-            };
+            ws.OnData += (sender, e) => OnMessage(e);
             ws.OnClose += (sender, e) =>
             {
-                //  window.clearTimeout(connectionTimeout);
-                //  self.onclose.apply(self, arguments);
+                connectionTimeout.Stop();
+                OnClose();
             };
             ws.OnOpen += (sender, e) =>
             {
-                //  window.clearTimeout(connectionTimeout);
-                //  self.onopen.apply(self, arguments);
+                connectionTimeout.Stop();
+                OnOpen();
             };
 
             this.connection = ws;
@@ -237,6 +234,32 @@ namespace WindowsFormsApplication1
             });
 
             this.retry_counter = this.retry_counter + 1;
+        }
+
+        public void OnClose()
+        {
+            //this.global_channel.dispatch('close', null);
+            Pusher.Log("Pusher : Socket closed");
+            if (this.connected)
+            {
+                //this.send_local_event("pusher:connection_disconnected", {});
+                if (Pusher.allow_reconnect)
+                {
+                    Pusher.Log("Pusher : Connection broken, trying to reconnect");
+                    this.Reconnect();
+                }
+            }
+            else
+            {
+                //this.send_local_event("pusher:connection_failed", {});
+                this.RetryConnect();
+            }
+            this.connected = false;
+        }
+
+        public void OnOpen()
+        {
+            //this.global_channel.dispatch('open', null);
         }
 
         // Pusher defaults
