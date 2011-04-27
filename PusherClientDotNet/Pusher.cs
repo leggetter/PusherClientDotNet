@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
         }
         public void SendLocalEvent(string event_name, Data event_data, string channel_name)
         {
-            //event_data = Pusher.DataDecorator(event_name, event_data); // todo
+            event_data = Pusher.DataDecorator(event_name, event_data);
             if (channel_name != null)
             {
                 throw new Exception("Code hasn't been ported from Pusher - see comments in source code");
@@ -309,7 +309,7 @@ namespace WindowsFormsApplication1
         private static void Log(string message, object message2) { }
         private static void Log(string message, object message2, object message3) { }
         private static void Log(string message, object message2, object message3, object message4) { }
-//Pusher.data_decorator = function(event_name, event_data){ return event_data }; // wrap event_data before dispatching
+        public static Data DataDecorator(string event_name, Data event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
         const string channel_auth_transport = "ajax";
 
