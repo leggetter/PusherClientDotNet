@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
         static bool allow_reconnect = true;
         const string channel_auth_transport = "ajax";
 
-        public object Parser(string data)
+        public static object Parser(string data)
         {
             try
             {
