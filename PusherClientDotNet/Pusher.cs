@@ -102,17 +102,16 @@ namespace WindowsFormsApplication1
             {
                 OnMessage(e);
             };
-            //ws.onmessage = function() {
-            //  self.onmessage.apply(self, arguments);
-            //};
-            //ws.onclose = function() {
-            //  window.clearTimeout(connectionTimeout);
-            //  self.onclose.apply(self, arguments);
-            //};
-            //ws.onopen = function() {
-            //  window.clearTimeout(connectionTimeout);
-            //  self.onopen.apply(self, arguments);
-            //};
+            ws.OnClose += (sender, e) =>
+            {
+                //  window.clearTimeout(connectionTimeout);
+                //  self.onclose.apply(self, arguments);
+            };
+            ws.OnOpen += (sender, e) =>
+            {
+                //  window.clearTimeout(connectionTimeout);
+                //  self.onopen.apply(self, arguments);
+            };
 
             this.connection = ws;
         }
