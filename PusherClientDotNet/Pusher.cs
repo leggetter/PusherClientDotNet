@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
         string path;
         string key;
         string socket_id;
-        Channels channels;
+        Channel.Channels channels;
         Channel global_channel;
         bool secure;
         bool connected;
@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
                 this.options = options;
             this.path = "/app/" + application_key + "?client=js&version=" + Pusher.VERSION;
             this.key = application_key;
-            this.channels = new Channels();
+            this.channels = new Channel.Channels();
             this.global_channel = new Pusher.Channel("pusher_global_channel");
             this.global_channel.global = true;
             this.secure = false;
@@ -258,19 +258,20 @@ namespace WindowsFormsApplication1
             public void Authorize(Pusher pusher, Action<Data> data)
             {
             }
+
+            public class Channels : Dictionary<string, Channel>
+            {
+                public Channels() { }
+                public Channel Add(string channel_name, Pusher pusher)
+                {
+                    return new Channel("SALKSDJKLJFDSF");
+                }
+            }
         }
 
         public class Data : Dictionary<string, object>
         {
             public Data() { }
-        }
-        public class Channels : Dictionary<string, Channel>
-        {
-            public Channels() { }
-            public Channel Add(string channel_name, Pusher pusher)
-            {
-                return new Channel("SALKSDJKLJFDSF");
-            }
         }
 
         private static class JSON
