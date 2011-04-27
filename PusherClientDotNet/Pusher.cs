@@ -261,7 +261,7 @@ namespace WindowsFormsApplication1
             {
             }
 
-            public void Authorize(Pusher pusher, Action<Dictionary<string, string>> data)
+            public void Authorize(Pusher pusher, Action<Data> data)
             {
             }
         }
