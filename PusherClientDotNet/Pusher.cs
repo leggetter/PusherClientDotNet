@@ -89,6 +89,7 @@ namespace WindowsFormsApplication1
             var self = this;
 
             var ws = new WebSocket(url);
+            ws.Open();
 
             // Timeout for the connection to handle silently hanging connections
             // Increase the timeout after each retry in case of extreme latencies
@@ -237,7 +238,6 @@ namespace WindowsFormsApplication1
 
         public void OnMessage(WebSocketEventArgs evt)
         {
-            System.Windows.Forms.MessageBox.Show("woah");
             Data paramss = JSON.parse(evt.TextData);
             if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
@@ -247,7 +247,10 @@ namespace WindowsFormsApplication1
             }
             Pusher.Log("Pusher : received message : ", paramss);
 
-            this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"], (string)paramss["channel"]);
+            if (paramss.ContainsKey("channel"))
+                this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"], (string)paramss["channel"]);
+            else
+                this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"]);
         }
 
         public void Reconnect()
@@ -475,6 +478,7 @@ namespace WindowsFormsApplication1
         public class Data : Dictionary<string, object>
         {
             public Data() { }
+            public Data(IDictionary<string, object> dictionary) : base(dictionary) { }
         }
 
         public static class JSON
@@ -483,7 +487,7 @@ namespace WindowsFormsApplication1
 
             public static Data parse(string str)
             {
-                return (Data)_serializer.DeserializeObject(str);
+                return new Data((IDictionary<string, object>)_serializer.DeserializeObject(str));
             }
 
             public static string stringify(object obj)
