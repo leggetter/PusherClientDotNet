@@ -317,10 +317,7 @@ namespace WindowsFormsApplication1
         static int connection_timeout = 5000;
         static string cdn_http = "http://js.pusherapp.com/";
         static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
-        private static void Log(string message) { }
-        private static void Log(string message, object message2) { }
-        private static void Log(string message, object message2, object message3) { }
-        private static void Log(string message, object message2, object message3, object message4) { }
+        private static void Log(string message, params object[] additional) { }
         public static Data DataDecorator(string event_name, Data event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
         static string channel_auth_transport = "ajax";
