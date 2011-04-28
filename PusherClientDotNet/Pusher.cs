@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         public Pusher(string application_key) : this(application_key, null) { }
         public Pusher(string application_key, Dictionary<string, object> options)
         {
+            Pusher.Initialize();
             if (options != null)
                 this.options = options;
             this.path = "/app/" + application_key + "?client=js&version=" + Pusher.VERSION;
@@ -236,6 +237,7 @@ namespace WindowsFormsApplication1
 
         public void OnMessage(WebSocketEventArgs evt)
         {
+            System.Windows.Forms.MessageBox.Show("woah");
             Data paramss = JSON.parse(evt.TextData);
             if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
@@ -337,7 +339,7 @@ namespace WindowsFormsApplication1
         }
 
         static bool isReady = false;
-        public void Ready()
+        public static void Ready()
         {
             Pusher.isReady = true;
             for(var i = 0; i < Pusher.instances.Count; i++) {
@@ -450,6 +452,16 @@ namespace WindowsFormsApplication1
             public void Authorize(Pusher pusher, Action<Data> callback)
             {
                 callback(new Data());
+            }
+        }
+
+        static bool _initialized = false;
+        public static void Initialize()
+        {
+            if (!_initialized)
+            {
+                _initialized = true;
+                Pusher.Ready();
             }
         }
 
