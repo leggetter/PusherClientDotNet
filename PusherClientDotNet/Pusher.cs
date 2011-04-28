@@ -310,20 +310,20 @@ namespace WindowsFormsApplication1
         // Pusher defaults
         const string VERSION = "1.8.3";
 
-        const string host = "ws.pusherapp.com";
-        const int ws_port = 80;
-        const int wss_port = 443;
-        const string channel_auth_endpoint = "/pusher/auth";
-        const int connection_timeout = 5000;
-        const string cdn_http = "http://js.pusherapp.com/";
-        const string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
+        static string host = "ws.pusherapp.com";
+        static int ws_port = 80;
+        static int wss_port = 443;
+        static string channel_auth_endpoint = "/pusher/auth";
+        static int connection_timeout = 5000;
+        static string cdn_http = "http://js.pusherapp.com/";
+        static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
         private static void Log(string message) { }
         private static void Log(string message, object message2) { }
         private static void Log(string message, object message2, object message3) { }
         private static void Log(string message, object message2, object message3, object message4) { }
         public static Data DataDecorator(string event_name, Data event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
-        const string channel_auth_transport = "ajax";
+        static string channel_auth_transport = "ajax";
 
         public static object Parser(string data)
         {
