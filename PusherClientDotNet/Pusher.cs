@@ -362,7 +362,7 @@ namespace WindowsFormsApplication1
                 {
                     if (!this.ContainsKey(channel_name))
                     {
-                        var channel = /*Pusher.Channel.factory(channel_name, pusher)*/ new Channel("SALKSDJKLJFDSF");
+                        var channel = Pusher.Channel.factory(channel_name, pusher);
                         this[channel_name] = channel;
                         return channel;
                     }
@@ -451,14 +451,37 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            public bool IsPrivate() { return false; }
+            public bool IsPrivate { get; internal set; }
 
-            public bool IsPresense() { return false; }
+            public bool IsPresence { get; internal set; }
 
             public void Authorize(Pusher pusher, Action<Data> callback)
             {
+                //if (IsPrivate)
+                //    Pusher.authorizers[Pusher.channel_auth_transport].scopedTo(this)(pusher, callback);
+                //else
                 callback(new Data());
             }
+
+            internal static Channel factory(string channel_name, Pusher pusher)
+            {
+                var channel = new Pusher.Channel(channel_name, pusher);
+                if (channel_name.IndexOf(Pusher.Channel.private_prefix) == 0)
+                {
+                    channel.IsPrivate = true;
+                }
+                else if (channel_name.IndexOf(Pusher.Channel.presence_prefix) == 0)
+                {
+                    throw new Exception("PusherClientDotNet: Presense channels not implemented yet");
+                    //Pusher.Util.extend(channel, Pusher.Channel.PrivateChannel);
+                    //Pusher.Util.extend(channel, Pusher.Channel.PresenceChannel);
+                };
+                //channel.Init();// inheritable constructor
+                return channel;
+            }
+
+            const string private_prefix = "private-";
+            const string presence_prefix = "presence-";
         }
 
         static bool _initialized = false;
