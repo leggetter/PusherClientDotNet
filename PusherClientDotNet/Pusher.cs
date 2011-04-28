@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
                 this.retry_counter = 0;
                 this.socket_id = (string)data["socket_id"];
                 this.SubscribeAll();
-            }/*.scopedTo(this)*/);
+            });
 
             this.Bind("pusher:connection_disconnected", (data) =>
             {
@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
                 {
                     this.channels[channel_name].Disconnect();
                 }
-            }/*.scopedTo(this)*/);
+            });
 
             this.Bind("pusher:error", (data) =>
             {
@@ -178,7 +178,7 @@ namespace WindowsFormsApplication1
                         { "auth", data["auth"] },
                         { "channel_data", data["channel_data"] }
                     });
-                }/*.scopedTo(this)*/);
+                });
             }
             return channel;
         }
