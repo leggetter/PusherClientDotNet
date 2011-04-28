@@ -313,15 +313,15 @@ namespace WindowsFormsApplication1
         }
 
         // Pusher defaults
-        const string VERSION = "1.8.3";
+        public const string VERSION = "1.8.3";
 
-        static string host = "ws.pusherapp.com";
-        static int ws_port = 80;
-        static int wss_port = 443;
-        static string channel_auth_endpoint = "/pusher/auth";
-        static int connection_timeout = 5000;
-        static string cdn_http = "http://js.pusherapp.com/";
-        static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
+        public static string host = "ws.pusherapp.com";
+        public static int ws_port = 80;
+        public static int wss_port = 443;
+        public static string channel_auth_endpoint = "/pusher/auth";
+        public static int connection_timeout = 5000;
+        public static string cdn_http = "http://js.pusherapp.com/";
+        public static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
 
         public static event PusherLogHandler OnLog;
         private static void Log(string message, params object[] additional)
