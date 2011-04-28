@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.ServiceModel.WebSockets;
 using System.Text;
 using System.Threading;
@@ -457,10 +459,16 @@ namespace WindowsFormsApplication1
 
             public void Authorize(Pusher pusher, Action<Data> callback)
             {
-                //if (IsPrivate)
-                //    Pusher.authorizers[Pusher.channel_auth_transport].scopedTo(this)(pusher, callback);
-                //else
-                callback(new Data());
+                if (IsPrivate)
+                {
+                    WebClient wc = new WebClient();
+                    wc.Headers.Set("Content-Type", "application/x-www-form-urlencoded");
+                    Data data = (Data)Pusher.Parser(wc.DownloadString(Pusher.channel_auth_endpoint));
+                    wc.UploadValues(Pusher.channel_auth_endpoint,
+                        new NameValueCollection() { { "socket_id", pusher.socket_id }, { "channel_name", this.name } });
+                }
+                else
+                    callback(new Data());
             }
 
             internal static Channel factory(string channel_name, Pusher pusher)
