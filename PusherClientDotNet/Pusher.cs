@@ -317,7 +317,13 @@ namespace WindowsFormsApplication1
         static int connection_timeout = 5000;
         static string cdn_http = "http://js.pusherapp.com/";
         static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
-        private static void Log(string message, params object[] additional) { }
+
+        public static event PusherLogHandler OnLog;
+        private static void Log(string message, params object[] additional)
+        {
+            if (OnLog != null) OnLog(null, new PusherLogEventArgs() { Message = message, Additional = additional });
+        }
+
         public static Data DataDecorator(string event_name, Data event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
         static string channel_auth_transport = "ajax";
@@ -485,5 +491,13 @@ namespace WindowsFormsApplication1
                 return _serializer.Serialize(obj);
             }
         }
+    }
+    
+    public delegate void PusherLogHandler(object sender, PusherLogEventArgs e);
+    public class PusherLogEventArgs : EventArgs
+    {
+        public string Message { get; internal set; }
+        public object[] Additional { get; internal set; }
+        public PusherLogEventArgs() { }
     }
 }
