@@ -159,9 +159,9 @@ namespace WindowsFormsApplication1
 
         public void SubscribeAll()
         {
-            foreach (Channel channel in this.channels.Values.ToList<Channel>())
+            foreach (string channel in this.channels.channels.Keys.ToList<string>())
             {
-                //if (this.channels.channels.hasOwnProperty(channel)) this.subscribe(channel);
+                if (this.channels.channels.ContainsKey(channel)) this.Subscribe(channel);
             }
         }
 
@@ -176,7 +176,7 @@ namespace WindowsFormsApplication1
                     {
                         { "channel", channel_name },
                         { "auth", data["auth"] },
-                        { "channel_data", data["channel_data"] }
+                        { "channel_data", data.ContainsKey("channel_data") ? data["channel_data"] : null }
                     });
                 });
             }
@@ -359,6 +359,8 @@ namespace WindowsFormsApplication1
         {
             public class Channels : Dictionary<string, Channel>
             {
+                internal Channels channels { get { return this; } }
+
                 public Channels() { }
                 public Channel Add(string channel_name, Pusher pusher)
                 {
@@ -461,14 +463,29 @@ namespace WindowsFormsApplication1
             {
                 if (IsPrivate)
                 {
-                    WebClient wc = new WebClient();
-                    wc.Headers.Set("Content-Type", "application/x-www-form-urlencoded");
-                    Data data = (Data)Pusher.Parser(wc.DownloadString(Pusher.channel_auth_endpoint));
-                    wc.UploadValues(Pusher.channel_auth_endpoint,
-                        new NameValueCollection() { { "socket_id", pusher.socket_id }, { "channel_name", this.name } });
+                    PusherAuthWebClient wc = new PusherAuthWebClient();
+                    //wc.Proxy = WebRequest.GetSystemWebProxy();
+                    wc.QueryString = new NameValueCollection() { { "socket_id", pusher.socket_id }, { "channel_name", this.name } };
+                    string resp = wc.DownloadString(Pusher.channel_auth_endpoint);
+                    Data data = (Data)Pusher.Parser(resp);
+                    callback(data);
                 }
                 else
                     callback(new Data());
+            }
+
+            class PusherAuthWebClient : WebClient
+            {
+                protected override WebRequest GetWebRequest(Uri address)
+                {
+                    HttpWebRequest request = (HttpWebRequest)base.GetWebRequest(address);
+                    request.Method = "POST";
+                    request.Accept = "application/json";
+                    request.ContentType = "application/x-www-form-urlencoded";
+                    if (Pusher.AuthCookieContainer != null)
+                        request.CookieContainer = Pusher.AuthCookieContainer;
+                    return request;
+                }
             }
 
             internal static Channel factory(string channel_name, Pusher pusher)
@@ -491,6 +508,8 @@ namespace WindowsFormsApplication1
             const string private_prefix = "private-";
             const string presence_prefix = "presence-";
         }
+
+        public static CookieContainer AuthCookieContainer { get; set; }
 
         static bool _initialized = false;
         public static void Initialize()
