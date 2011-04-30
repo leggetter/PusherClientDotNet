@@ -44,15 +44,16 @@ namespace WindowsFormsApplication1
             Pusher.instances.Add(this);
 
             //This is the new namespaced version
-            this.Bind("pusher:connection_established", (data) =>
+            this.Bind("pusher:connection_established", d =>
             {
+                Data data = (Data)d;
                 this.connected = true;
                 this.retry_counter = 0;
                 this.socket_id = (string)data["socket_id"];
                 this.SubscribeAll();
             });
 
-            this.Bind("pusher:connection_disconnected", (data) =>
+            this.Bind("pusher:connection_disconnected", d =>
             {
                 foreach (string channel_name in this.channels.Keys.ToList<string>())
                 {
@@ -60,8 +61,9 @@ namespace WindowsFormsApplication1
                 }
             });
 
-            this.Bind("pusher:error", (data) =>
+            this.Bind("pusher:error", d =>
             {
+                Data data = (Data)d;
                 Pusher.Log("Pusher : error : " + (string)data["message"]);
             });
         }
@@ -145,13 +147,13 @@ namespace WindowsFormsApplication1
             this.connection.Close();
         }
 
-        public Pusher Bind(string event_name, Action<Data> callback)
+        public Pusher Bind(string event_name, Action<object> callback)
         {
             this.global_channel.Bind(event_name, callback);
             return this;
         }
 
-        public Pusher BindAll(string event_name, Action<Data> callback)
+        public Pusher BindAll(string event_name, Action<object> callback)
         {
             this.global_channel.BindAll(callback);
             return this;
@@ -170,8 +172,9 @@ namespace WindowsFormsApplication1
             Channel channel = this.channels.Add(channel_name, this);
             if (this.connected)
             {
-                channel.Authorize(this, (data) =>
+                channel.Authorize(this, d =>
                 {
+                    Data data = (Data)d;
                     this.SendEvent("pusher:subscribe", new Data()
                     {
                         { "channel", channel_name },
@@ -214,11 +217,11 @@ namespace WindowsFormsApplication1
             return this;
         }
 
-        public void SendLocalEvent(string event_name, Data event_data)
+        public void SendLocalEvent(string event_name, object event_data)
         {
             SendLocalEvent(event_name, event_data, null);
         }
-        public void SendLocalEvent(string event_name, Data event_data, string channel_name)
+        public void SendLocalEvent(string event_name, object event_data, string channel_name)
         {
             event_data = Pusher.DataDecorator(event_name, event_data);
             if (channel_name != null)
@@ -250,9 +253,9 @@ namespace WindowsFormsApplication1
             Pusher.Log("Pusher : received message : ", paramss);
 
             if (paramss.ContainsKey("channel"))
-                this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"], (string)paramss["channel"]);
+                this.SendLocalEvent((string)paramss["event"], paramss["data"], (string)paramss["channel"]);
             else
-                this.SendLocalEvent((string)paramss["event"], (Data)paramss["data"]);
+                this.SendLocalEvent((string)paramss["event"], paramss["data"]);
         }
 
         public void Reconnect()
@@ -329,7 +332,7 @@ namespace WindowsFormsApplication1
             if (OnLog != null) OnLog(null, new PusherLogEventArgs() { Message = message, Additional = additional });
         }
 
-        public static Data DataDecorator(string event_name, Data event_data) { return event_data; } // wrap event_data before dispatching
+        public static object DataDecorator(string event_name, object event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
         static string channel_auth_transport = "ajax";
 
@@ -401,7 +404,7 @@ namespace WindowsFormsApplication1
                 this.subscribed = true;
             }
 
-            public Channel Bind(string event_name, Action<Data> callback)
+            public Channel Bind(string event_name, Action<object> callback)
             {
                 if (!this.callbacks.ContainsKey(event_name))
                     this.callbacks[event_name] = new Callbacks();
@@ -409,7 +412,7 @@ namespace WindowsFormsApplication1
                 return this;
             }
 
-            public Channel BindAll(Action<Data> callback)
+            public Channel BindAll(Action<object> callback)
             {
                 this.global_callbacks.Add(callback);
                 return this;
@@ -421,7 +424,7 @@ namespace WindowsFormsApplication1
                 return this;
             }
 
-            public void DispatchWithAll(string event_name, Data data)
+            public void DispatchWithAll(string event_name, object data)
             {
                 if (this.name != "pusher_global_channel")
                 {
@@ -431,11 +434,11 @@ namespace WindowsFormsApplication1
                 this.DispatchGlobalCallbacks(event_name, data);
             }
 
-            public void Dispatch(string event_name, Data event_data)
+            public void Dispatch(string event_name, object event_data)
             {
                 if (this.callbacks.ContainsKey(event_name))
                 {
-                    foreach (Action<Data> callback in this.callbacks[event_name])
+                    foreach (Action<object> callback in this.callbacks[event_name])
                     {
                         callback(event_data);
                     }
@@ -446,9 +449,9 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            public void DispatchGlobalCallbacks(string event_name, Data event_data)
+            public void DispatchGlobalCallbacks(string event_name, object event_data)
             {
-                foreach (Action<Data> callback in this.global_callbacks)
+                foreach (Action<object> callback in this.global_callbacks)
                 {
                     // Is this correct or not? The JS passes both params...
                     callback(event_data);
@@ -459,7 +462,7 @@ namespace WindowsFormsApplication1
 
             public bool IsPresence { get; internal set; }
 
-            public void Authorize(Pusher pusher, Action<Data> callback)
+            public void Authorize(Pusher pusher, Action<object> callback)
             {
                 if (IsPrivate)
                 {
@@ -521,7 +524,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public class Callbacks : List<Action<Data>>
+        public class Callbacks : List<Action<object>>
         {
             public Callbacks() { }
         }
