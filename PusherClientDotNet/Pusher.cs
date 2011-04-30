@@ -1,4 +1,13 @@
-﻿using System;
+﻿/**
+ * PusherClientDotNet v1.8.3-incomplete
+ * C# port by Richard Z.H. Wang <http://rewrite.name/>
+ *
+ * Copyright 2010, 2011, New Bamboo
+ * Copyright 2011, Richard Z.H. Wang
+ * Released under the MIT licence.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
