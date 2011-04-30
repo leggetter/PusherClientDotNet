@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
 
-namespace WindowsFormsApplication1
+namespace PusherClientDotNet
 {
-    class Pusher
+    public class Pusher
     {
-        Dictionary<string, object> options = new Dictionary<string,object>();
+        Dictionary<string, object> options = new Dictionary<string, object>();
         string path;
         string key;
         string socket_id;
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
             this.retry_counter = 0;
             if (options != null && options.ContainsKey("encrypted"))
                 this.encrypted = ((bool)this.options["encrypted"]) ? true : false;
-            if(Pusher.isReady) this.Connect();
+            if (Pusher.isReady) this.Connect();
             Pusher.instances.Add(this);
 
             //This is the new namespaced version
@@ -69,7 +69,7 @@ namespace WindowsFormsApplication1
         }
 
         static List<Pusher> instances = new List<Pusher>();
-        
+
         public Channel GetChannel(string name)
         {
             return this.channels[name];
@@ -353,8 +353,9 @@ namespace WindowsFormsApplication1
         public static void Ready()
         {
             Pusher.isReady = true;
-            for(var i = 0; i < Pusher.instances.Count; i++) {
-                if(!Pusher.instances[i].connected) Pusher.instances[i].Connect();
+            for (var i = 0; i < Pusher.instances.Count; i++)
+            {
+                if (!Pusher.instances[i].connected) Pusher.instances[i].Connect();
             }
         }
 
@@ -549,7 +550,7 @@ namespace WindowsFormsApplication1
             }
         }
     }
-    
+
     public delegate void PusherLogHandler(object sender, PusherLogEventArgs e);
     public class PusherLogEventArgs : EventArgs
     {

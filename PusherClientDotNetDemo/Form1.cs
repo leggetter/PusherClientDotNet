@@ -6,8 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using PusherClientDotNet;
 
-namespace WindowsFormsApplication1
+namespace PusherClientDotNetDemo
 {
     public partial class Form1 : Form
     {
