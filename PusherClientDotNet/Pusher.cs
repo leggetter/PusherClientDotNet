@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
             //This is the new namespaced version
             this.Bind("pusher:connection_established", d =>
             {
-                Data data = (Data)d;
+                JsonData data = (JsonData)d;
                 this.connected = true;
                 this.retry_counter = 0;
                 this.socket_id = (string)data["socket_id"];
@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
 
             this.Bind("pusher:error", d =>
             {
-                Data data = (Data)d;
+                JsonData data = (JsonData)d;
                 Pusher.Log("Pusher : error : " + (string)data["message"]);
             });
         }
@@ -174,8 +174,8 @@ namespace WindowsFormsApplication1
             {
                 channel.Authorize(this, d =>
                 {
-                    Data data = (Data)d;
-                    this.SendEvent("pusher:subscribe", new Data()
+                    JsonData data = (JsonData)d;
+                    this.SendEvent("pusher:subscribe", new JsonData()
                     {
                         { "channel", channel_name },
                         { "auth", data.ContainsKey("auth") ? data["auth"] : null },
@@ -192,22 +192,22 @@ namespace WindowsFormsApplication1
 
             if (this.connected)
             {
-                this.SendEvent("pusher:unsubscribe", new Data()
+                this.SendEvent("pusher:unsubscribe", new JsonData()
                 {
                     { "channel", channel_name }
                 });
             }
         }
 
-        public void SendEvent(string event_name, Data data)
+        public void SendEvent(string event_name, JsonData data)
         {
             SendEvent(event_name, data, null);
         }
-        public Pusher SendEvent(string event_name, Data data, string channel)
+        public Pusher SendEvent(string event_name, JsonData data, string channel)
         {
             Pusher.Log("Pusher : event sent (channel,event,data) : ", channel, event_name, data);
 
-            var payload = new Data() {
+            var payload = new JsonData() {
                 {"event", event_name},
                 {"data", data}
             };
@@ -243,7 +243,7 @@ namespace WindowsFormsApplication1
 
         public void OnMessage(WebSocketEventArgs evt)
         {
-            Data paramss = JSON.parse(evt.TextData);
+            JsonData paramss = JSON.parse(evt.TextData);
             if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
             if (paramss["data"] is string)
@@ -295,7 +295,7 @@ namespace WindowsFormsApplication1
             Pusher.Log("Pusher : Socket closed");
             if (this.connected)
             {
-                this.SendLocalEvent("pusher:connection_disconnected", new Data());
+                this.SendLocalEvent("pusher:connection_disconnected", new JsonData());
                 if (Pusher.allow_reconnect)
                 {
                     Pusher.Log("Pusher : Connection broken, trying to reconnect");
@@ -399,7 +399,7 @@ namespace WindowsFormsApplication1
 
             public void Disconnect() { }
 
-            public void AcknowledgeSubscription(Data data)
+            public void AcknowledgeSubscription(JsonData data)
             {
                 this.subscribed = true;
             }
@@ -418,7 +418,7 @@ namespace WindowsFormsApplication1
                 return this;
             }
 
-            public Channel Trigger(string event_name, Data data)
+            public Channel Trigger(string event_name, JsonData data)
             {
                 this.pusher.SendEvent(event_name, data, this.name);
                 return this;
@@ -470,11 +470,11 @@ namespace WindowsFormsApplication1
                     //wc.Proxy = WebRequest.GetSystemWebProxy();
                     wc.QueryString = new NameValueCollection() { { "socket_id", pusher.socket_id }, { "channel_name", this.name } };
                     string resp = wc.DownloadString(Pusher.channel_auth_endpoint);
-                    Data data = (Data)Pusher.Parser(resp);
+                    JsonData data = (JsonData)Pusher.Parser(resp);
                     callback(data);
                 }
                 else
-                    callback(new Data());
+                    callback(new JsonData());
             }
 
             class PusherAuthWebClient : WebClient
@@ -528,19 +528,19 @@ namespace WindowsFormsApplication1
         {
             public Callbacks() { }
         }
-        public class Data : Dictionary<string, object>
+        public class JsonData : Dictionary<string, object>
         {
-            public Data() { }
-            public Data(IDictionary<string, object> dictionary) : base(dictionary) { }
+            public JsonData() { }
+            public JsonData(IDictionary<string, object> dictionary) : base(dictionary) { }
         }
 
         public static class JSON
         {
             static JavaScriptSerializer _serializer = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
 
-            public static Data parse(string str)
+            public static JsonData parse(string str)
             {
-                return new Data((IDictionary<string, object>)_serializer.DeserializeObject(str));
+                return new JsonData((IDictionary<string, object>)_serializer.DeserializeObject(str));
             }
 
             public static string stringify(object obj)
