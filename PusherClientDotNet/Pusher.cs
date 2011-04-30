@@ -175,7 +175,7 @@ namespace WindowsFormsApplication1
                     this.SendEvent("pusher:subscribe", new Data()
                     {
                         { "channel", channel_name },
-                        { "auth", data["auth"] },
+                        { "auth", data.ContainsKey("auth") ? data["auth"] : null },
                         { "channel_data", data.ContainsKey("channel_data") ? data["channel_data"] : null }
                     });
                 });
