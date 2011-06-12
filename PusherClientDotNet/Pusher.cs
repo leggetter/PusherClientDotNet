@@ -15,16 +15,41 @@ using System.Net;
 using System.ServiceModel.WebSockets;
 using System.Text;
 using System.Threading;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace PusherClientDotNet
 {
     public class Pusher
     {
+        // Pusher defaults
+        public const string VERSION = "1.8.3";
+
+        public static string host = "ws.pusherapp.com";
+        public static int ws_port = 80;
+        public static int wss_port = 443;
+
+#if SILVERLIGHT
+        // we can't get the host from the running application from within a library
+        // so we set as null and check later. Setting this end point is essential for
+        // Silverlight clients
+        public static string channel_auth_endpoint = null;
+#else
+        public static string channel_auth_endpoint = "/pusher/auth";
+#endif
+        
+        public static int connection_timeout = 5000;
+        public static string cdn_http = "http://js.pusherapp.com/";
+        public static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
+
         Dictionary<string, object> options = new Dictionary<string, object>();
         string path;
         string key;
-        string socket_id;
+        public string socket_id
+        {
+            get;
+            private set;
+        }
         Channel.Channels channels;
         Channel global_channel;
         bool secure;
@@ -42,7 +67,7 @@ namespace PusherClientDotNet
             this.path = "/app/" + application_key + "?client=js&version=" + Pusher.VERSION;
             this.key = application_key;
             this.channels = new Channel.Channels();
-            this.global_channel = new Pusher.Channel("pusher_global_channel");
+            this.global_channel = new Channel("pusher_global_channel");
             this.global_channel.global = true;
             this.secure = false;
             this.connected = false;
@@ -102,36 +127,38 @@ namespace PusherClientDotNet
             var self = this;
 
             var ws = new WebSocket(url);
-            ws.Open();
 
             // Timeout for the connection to handle silently hanging connections
             // Increase the timeout after each retry in case of extreme latencies
-            System.Timers.Timer connectionTimeout = new System.Timers.Timer();
-            new Thread(() =>
+            int interval = Pusher.connection_timeout + (this.retry_counter * 1000);
+
+            var timerRef = new TimerRef();
+            timerRef.Ref = new Timer(delegate(object state)
             {
-                connectionTimeout.Interval = Pusher.connection_timeout + (this.retry_counter * 1000);
-                connectionTimeout.Elapsed += (sender, e) =>
-                {
-                    connectionTimeout.Stop();
-                    Pusher.Log("Pusher : connection timeout after " + connectionTimeout.Interval + "ms");
-                    ws.Close();
-                };
-                connectionTimeout.Start();
-            }).Start();
+                Pusher.Log("Pusher : connection timeout after " + interval + "ms");
+                ws.Close();
+                try { timerRef.Ref.Dispose(); }
+                catch { }
+
+            }, null, interval, interval);
 
             ws.OnData += (sender, e) => OnMessage(e);
             ws.OnClose += (sender, e) =>
             {
-                connectionTimeout.Stop();
+                try { timerRef.Ref.Dispose(); }
+                catch { }
                 OnClose();
             };
             ws.OnOpen += (sender, e) =>
             {
-                connectionTimeout.Stop();
+                try { timerRef.Ref.Dispose(); }
+                catch { }
                 OnOpen();
             };
 
             this.connection = ws;
+
+            ws.Open();
         }
 
         public void ToggleSecure()
@@ -181,16 +208,20 @@ namespace PusherClientDotNet
             Channel channel = this.channels.Add(channel_name, this);
             if (this.connected)
             {
-                channel.Authorize(this, d =>
-                {
-                    JsonData data = (JsonData)d;
-                    this.SendEvent("pusher:subscribe", new JsonData()
+                new Thread(() =>
+
+                    channel.Authorize(this, d =>
                     {
-                        { "channel", channel_name },
-                        { "auth", data.ContainsKey("auth") ? data["auth"] : null },
-                        { "channel_data", data.ContainsKey("channel_data") ? data["channel_data"] : null }
-                    });
-                });
+                        JsonData data = (JsonData)d;
+                        this.SendEvent("pusher:subscribe", new JsonData()
+                        {
+                            { "channel", channel_name },
+                            { "auth", data.ContainsKey("auth") ? data["auth"] : null },
+                            { "channel_data", data.ContainsKey("channel_data") ? data["channel_data"] : null }
+                        });
+                    })
+
+                ).Start();
             }
             return channel;
         }
@@ -208,11 +239,11 @@ namespace PusherClientDotNet
             }
         }
 
-        public void SendEvent(string event_name, JsonData data)
+        internal void SendEvent(string event_name, JsonData data)
         {
             SendEvent(event_name, data, null);
         }
-        public Pusher SendEvent(string event_name, JsonData data, string channel)
+        internal Pusher SendEvent(string event_name, JsonData data, string channel)
         {
             Pusher.Log("Pusher : event sent (channel,event,data) : ", channel, event_name, data);
 
@@ -226,11 +257,11 @@ namespace PusherClientDotNet
             return this;
         }
 
-        public void SendLocalEvent(string event_name, object event_data)
+        private void SendLocalEvent(string event_name, object event_data)
         {
             SendLocalEvent(event_name, event_data, null);
         }
-        public void SendLocalEvent(string event_name, object event_data, string channel_name)
+        private void SendLocalEvent(string event_name, object event_data, string channel_name)
         {
             event_data = Pusher.DataDecorator(event_name, event_data);
             if (channel_name != null)
@@ -250,8 +281,10 @@ namespace PusherClientDotNet
             this.global_channel.DispatchWithAll(event_name, event_data);
         }
 
-        public void OnMessage(WebSocketEventArgs evt)
+        private void OnMessage(WebSocketEventArgs evt)
         {
+            Pusher.Log("Pusher : OnMessage : ", evt.TextData);
+
             JsonData paramss = JSON.parse(evt.TextData);
             if (paramss.ContainsKey("socket_id") && paramss["socket_id"].ToString() == this.socket_id) return;
             // Try to parse the event data unless it has already been decoded
@@ -267,38 +300,46 @@ namespace PusherClientDotNet
                 this.SendLocalEvent((string)paramss["event"], paramss["data"]);
         }
 
-        public void Reconnect()
+        private void Reconnect()
         {
             new Thread(() => this.Connect()).Start();
         }
 
-        public void RetryConnect()
+        private void RetryConnect()
         {
             // Unless we're ssl only, try toggling between ws & wss
             if (!this.encrypted)
             {
+#if !SILVERLIGHT
+                // not supported by silverlight
                 this.ToggleSecure();
+#endif
             }
 
             // Retry with increasing delay, with a maximum interval of 10s
             var retry_delay = Math.Min(this.retry_counter * 1000, 10000);
             Pusher.Log("Pusher : Retrying connection in " + retry_delay + "ms");
-            System.Timers.Timer retryTimer = new System.Timers.Timer();
-            new Thread(() =>
+
+            int interval = Pusher.connection_timeout + (this.retry_counter * 1000);
+            var timerRef = new TimerRef();
+            timerRef.Ref = new Timer(delegate(object state)
             {
-                retryTimer.Interval = retry_delay;
-                retryTimer.Elapsed += (sender, e) =>
-                {
-                    retryTimer.Stop();
-                    this.Connect();
-                };
-                retryTimer.Start();
-            });
+                this.Connect();
+
+                try { timerRef.Ref.Dispose(); }
+                catch { }
+
+            }, timerRef, retry_delay, retry_delay);
 
             this.retry_counter = this.retry_counter + 1;
         }
 
-        public void OnClose()
+        struct TimerRef
+        {
+            public Timer Ref;
+        }
+
+        private void OnClose()
         {
             this.global_channel.Dispatch("close", null);
             Pusher.Log("Pusher : Socket closed");
@@ -319,31 +360,22 @@ namespace PusherClientDotNet
             this.connected = false;
         }
 
-        public void OnOpen()
+        private void OnOpen()
         {
             this.global_channel.Dispatch("open", null);
         }
 
-        // Pusher defaults
-        public const string VERSION = "1.8.3";
 
-        public static string host = "ws.pusherapp.com";
-        public static int ws_port = 80;
-        public static int wss_port = 443;
-        public static string channel_auth_endpoint = "/pusher/auth";
-        public static int connection_timeout = 5000;
-        public static string cdn_http = "http://js.pusherapp.com/";
-        public static string cdn_https = "https://d3ds63zw57jt09.cloudfront.net/";
 
         public static event PusherLogHandler OnLog;
-        private static void Log(string message, params object[] additional)
+        internal static void Log(string message, params object[] additional)
         {
             if (OnLog != null) OnLog(null, new PusherLogEventArgs() { Message = message, Additional = additional });
         }
 
         public static object DataDecorator(string event_name, object event_data) { return event_data; } // wrap event_data before dispatching
         static bool allow_reconnect = true;
-        static string channel_auth_transport = "ajax";
+        //static string channel_auth_transport = "ajax";
 
         public static object Parser(string data)
         {
@@ -368,160 +400,6 @@ namespace PusherClientDotNet
             }
         }
 
-        public class Channel
-        {
-            public class Channels : Dictionary<string, Channel>
-            {
-                internal Channels channels { get { return this; } }
-
-                public Channels() { }
-                public Channel Add(string channel_name, Pusher pusher)
-                {
-                    if (!this.ContainsKey(channel_name))
-                    {
-                        var channel = Pusher.Channel.factory(channel_name, pusher);
-                        this[channel_name] = channel;
-                        return channel;
-                    }
-                    else
-                    {
-                        return this[channel_name];
-                    }
-                }
-            }
-
-            Pusher pusher;
-            string name;
-            Dictionary<string, Callbacks> callbacks;
-            Callbacks global_callbacks;
-            bool subscribed;
-
-            public bool global;
-            public Channel(string channel_name) : this(channel_name, null) { }
-            public Channel(string channel_name, Pusher pusher)
-            {
-                this.pusher = pusher;
-                this.name = channel_name;
-                this.callbacks = new Dictionary<string, Callbacks>();
-                this.global_callbacks = new Callbacks();
-                this.subscribed = false;
-            }
-
-            public void Disconnect() { }
-
-            public void AcknowledgeSubscription(JsonData data)
-            {
-                this.subscribed = true;
-            }
-
-            public Channel Bind(string event_name, Action<object> callback)
-            {
-                if (!this.callbacks.ContainsKey(event_name))
-                    this.callbacks[event_name] = new Callbacks();
-                this.callbacks[event_name].Add(callback);
-                return this;
-            }
-
-            public Channel BindAll(Action<object> callback)
-            {
-                this.global_callbacks.Add(callback);
-                return this;
-            }
-
-            public Channel Trigger(string event_name, JsonData data)
-            {
-                this.pusher.SendEvent(event_name, data, this.name);
-                return this;
-            }
-
-            public void DispatchWithAll(string event_name, object data)
-            {
-                if (this.name != "pusher_global_channel")
-                {
-                    Pusher.Log("Pusher : event recd (channel,event,data)", this.name, event_name, data);
-                }
-                this.Dispatch(event_name, data);
-                this.DispatchGlobalCallbacks(event_name, data);
-            }
-
-            public void Dispatch(string event_name, object event_data)
-            {
-                if (this.callbacks.ContainsKey(event_name))
-                {
-                    foreach (Action<object> callback in this.callbacks[event_name])
-                    {
-                        callback(event_data);
-                    }
-                }
-                else if (!this.global)
-                {
-                    Pusher.Log("Pusher : No callbacks for " + event_name);
-                }
-            }
-
-            public void DispatchGlobalCallbacks(string event_name, object event_data)
-            {
-                foreach (Action<object> callback in this.global_callbacks)
-                {
-                    // Is this correct or not? The JS passes both params...
-                    callback(event_data);
-                }
-            }
-
-            public bool IsPrivate { get; internal set; }
-
-            public bool IsPresence { get; internal set; }
-
-            public void Authorize(Pusher pusher, Action<object> callback)
-            {
-                if (IsPrivate)
-                {
-                    PusherAuthWebClient wc = new PusherAuthWebClient();
-                    //wc.Proxy = WebRequest.GetSystemWebProxy();
-                    wc.QueryString = new NameValueCollection() { { "socket_id", pusher.socket_id }, { "channel_name", this.name } };
-                    string resp = wc.DownloadString(Pusher.channel_auth_endpoint);
-                    JsonData data = (JsonData)Pusher.Parser(resp);
-                    callback(data);
-                }
-                else
-                    callback(new JsonData());
-            }
-
-            class PusherAuthWebClient : WebClient
-            {
-                protected override WebRequest GetWebRequest(Uri address)
-                {
-                    HttpWebRequest request = (HttpWebRequest)base.GetWebRequest(address);
-                    request.Method = "POST";
-                    request.Accept = "application/json";
-                    request.ContentType = "application/x-www-form-urlencoded";
-                    if (Pusher.AuthCookieContainer != null)
-                        request.CookieContainer = Pusher.AuthCookieContainer;
-                    return request;
-                }
-            }
-
-            internal static Channel factory(string channel_name, Pusher pusher)
-            {
-                var channel = new Pusher.Channel(channel_name, pusher);
-                if (channel_name.IndexOf(Pusher.Channel.private_prefix) == 0)
-                {
-                    channel.IsPrivate = true;
-                }
-                else if (channel_name.IndexOf(Pusher.Channel.presence_prefix) == 0)
-                {
-                    throw new Exception("PusherClientDotNet: Presense channels not implemented yet");
-                    //Pusher.Util.extend(channel, Pusher.Channel.PrivateChannel);
-                    //Pusher.Util.extend(channel, Pusher.Channel.PresenceChannel);
-                };
-                //channel.Init();// inheritable constructor
-                return channel;
-            }
-
-            const string private_prefix = "private-";
-            const string presence_prefix = "presence-";
-        }
-
         public static CookieContainer AuthCookieContainer { get; set; }
 
         static bool _initialized = false;
@@ -534,28 +412,20 @@ namespace PusherClientDotNet
             }
         }
 
-        public class Callbacks : List<Action<object>>
-        {
-            public Callbacks() { }
-        }
-        public class JsonData : Dictionary<string, object>
-        {
-            public JsonData() { }
-            public JsonData(IDictionary<string, object> dictionary) : base(dictionary) { }
-        }
+        
+        
 
         public static class JSON
         {
-            static JavaScriptSerializer _serializer = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
-
             public static JsonData parse(string str)
             {
-                return new JsonData((IDictionary<string, object>)_serializer.DeserializeObject(str));
+                var obj = JsonConvert.DeserializeObject<IDictionary<string, object>>(str);
+                return new JsonData(obj);
             }
 
             public static string stringify(object obj)
             {
-                return _serializer.Serialize(obj);
+                return JsonConvert.SerializeObject(obj);
             }
         }
     }

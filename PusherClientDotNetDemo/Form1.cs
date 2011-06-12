@@ -13,7 +13,7 @@ namespace PusherClientDotNetDemo
     public partial class Form1 : Form
     {
         Pusher _pusher;
-        Pusher.Channel _pusherChannel;
+        Channel _pusherChannel;
 
         public Form1()
         {
@@ -33,7 +33,7 @@ namespace PusherClientDotNetDemo
             foreach (object obj in e.Additional)
             {
                 textBoxConsole.Text += " | ";
-                if (obj is Pusher.JsonData)
+                if (obj is JsonData)
                     textBoxConsole.Text += Pusher.JSON.stringify(obj);
                 else
                     textBoxConsole.Text += obj == null ? "null" : obj.ToString();

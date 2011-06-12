@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<publishData>
+  <publishProfile publishUrl="C:\tmp\PusherSilverlightTestApp" deleteExistingFiles="True" ftpAnonymousLogin="False" ftpPassiveMode="True" msdeploySite="" msdeploySiteID="" msdeployRemoteSitePhysicalPath="" msdeployAllowUntrustedCertificate="False" msdeploySkipExtraFilesOnServer="True" msdeployMarkAsApp="False" profileName="Profile1" publishMethod="FileSystem" replaceMatchingFiles="False" userName="" savePWD="False" userPWD="" SelectedForPublish="True">
+    <file relUrl="Web.config" publishTime="06/12/2011 16:39:18" />
+    <file relUrl="bin/PusherSilverlightTestApp.Web.pdb" publishTime="06/12/2011 15:10:12" />
+    <file relUrl="PusherPresenceAuthHandler.ashx" publishTime="06/12/2011 14:40:35" />
+    <file relUrl="bin/Newtonsoft.Json.pdb" publishTime="04/23/2011 13:29:24" />
+    <file relUrl="bin/Pusher.Authentication.pdb" publishTime="06/12/2011 14:59:11" />
+    <file relUrl="PusherAuthHandler.ashx" publishTime="06/11/2011 13:12:07" />
+    <file relUrl="Default.aspx" publishTime="06/12/2011 15:10:49" />
+    <file relUrl="bin/Newtonsoft.Json.xml" publishTime="04/23/2011 13:29:24" />
+    <file relUrl="bin/clientaccesspolicy.xml" publishTime="06/11/2011 12:27:49" />
+    <file relUrl="ClientBin/PusherSilverlightTestApp.xap" publishTime="06/12/2011 16:36:16" />
+    <file relUrl="clientaccesspolicy.xml" publishTime="06/11/2011 12:27:49" />
+    <file relUrl="bin/Newtonsoft.Json.dll" publishTime="04/23/2011 13:29:24" />
+    <file relUrl="Silverlight.js" publishTime="05/20/2011 10:24:50" />
+    <file relUrl="bin/Pusher.Authentication.dll" publishTime="06/12/2011 14:59:12" />
+    <file relUrl="bin/PusherSilverlightTestApp.Web.dll" publishTime="06/12/2011 15:10:13" />
+  </publishProfile>
+</publishData>
