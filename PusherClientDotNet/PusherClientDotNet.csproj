@@ -51,7 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Channel.cs" />
+    <Compile Include="IWebSocket.cs" />
     <Compile Include="JsonData.cs" />
+    <Compile Include="MicrosoftWebSocketProxy.cs" />
     <Compile Include="Pusher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -61,8 +61,14 @@
     <Compile Include="..\PusherClientDotNet\Channel.cs">
       <Link>Channel.cs</Link>
     </Compile>
+    <Compile Include="..\PusherClientDotNet\IWebSocket.cs">
+      <Link>IWebSocket.cs</Link>
+    </Compile>
     <Compile Include="..\PusherClientDotNet\JsonData.cs">
       <Link>JsonData.cs</Link>
+    </Compile>
+    <Compile Include="..\PusherClientDotNet\MicrosoftWebSocketProxy.cs">
+      <Link>MicrosoftWebSocketProxy.cs</Link>
     </Compile>
     <Compile Include="..\PusherClientDotNet\Pusher.cs">
       <Link>Pusher.cs</Link>
@@ -73,6 +79,10 @@
     <ProjectReference Include="..\Microsoft.ServiceModel.WebSockets.Silverlight\Microsoft.ServiceModel.WebSockets.Silverlight.csproj">
       <Project>{AE146660-F5A4-47AD-8595-76E7C45A20D3}</Project>
       <Name>Microsoft.ServiceModel.WebSockets.Silverlight</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\superwebsocket-68127\mainline\Client\Client.Silverlight.csproj">
+      <Project>{E1DE8918-17F7-4423-9AD5-FB05C84820E4}</Project>
+      <Name>Client.Silverlight</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />

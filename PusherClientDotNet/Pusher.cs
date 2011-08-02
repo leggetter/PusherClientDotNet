@@ -56,7 +56,7 @@ namespace PusherClientDotNet
         bool connected;
         int retry_counter;
         bool encrypted;
-        WebSocket connection;
+        IWebSocket connection;
 
         public Pusher(string application_key) : this(application_key, null) { }
         public Pusher(string application_key, Dictionary<string, object> options)
@@ -126,7 +126,7 @@ namespace PusherClientDotNet
 
             var self = this;
 
-            var ws = new WebSocket(url);
+            IWebSocket ws = CreateWebSocket(url);
 
             // Timeout for the connection to handle silently hanging connections
             // Increase the timeout after each retry in case of extreme latencies
@@ -159,6 +159,15 @@ namespace PusherClientDotNet
             this.connection = ws;
 
             ws.Open();
+        }
+
+        private IWebSocket CreateWebSocket(string url)
+        {
+//#if !SILVERLIGHT
+            return new MicrosoftWebSocketProxy(url);
+//#else
+//            return new SuperSocketWebSocket(url);
+//#endif
         }
 
         public void ToggleSecure()

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Pusher.Authentication;
 using System.Configuration;
+using PusherRESTDotNet;
 
 namespace PusherSilverlightTestApp.Web
 {
@@ -32,8 +32,8 @@ namespace PusherSilverlightTestApp.Web
         {
             SetupDefaultProvider(context);
 
-            var helper = new PusherAuthenticationHelper(applicationId, applicationKey, applicationSecret);
-            string authJson = helper.CreateAuthenticatedString(socketID, channelName);
+            var provider = new PusherProvider(applicationId, applicationKey, applicationSecret);
+            string authJson = provider.Authenticate(socketID, channelName);
 
             context.Response.Write(authJson);
         }

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Pusher.Authentication;
 using System.Configuration;
+using PusherRESTDotNet.Authentication;
 
 namespace PusherSilverlightTestApp.Web
 {

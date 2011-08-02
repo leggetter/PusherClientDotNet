@@ -42,7 +42,6 @@ channel must be authenticated. In the example a HTTP handler has been used to ha
 request from the Silverlight client. This has been configured in Web.config with the following:
 
     <system.web>
-
         <httpHandlers>
             <add verb="*" path="/pusher/auth/" type="PusherSilverlightTestApp.Web.PusherAuthHandler" />
         </httpHandlers>
@@ -54,6 +53,7 @@ This means that for the demo to work when running in Visual Studio the port must
 
 ## How to get the PusherSilverlightTestApp.Web working
 
+1. Ensure you have a reference to the [Pusher REST .NET libray](https://github.com/leggetter/pusher-rest-dotnet). This is also available as a [NuGet package](http://nuget.org/List/Packages/PusherRESTDotNet).
 1. Get a version of the Microsoft WebSockets prototype that fetches the clientaccesspolicy.xml from port 943
 2. Ensure that the YOUR_APP_KEY value in MainPage.xaml.cs has been updated to use your API key
 3. Have client events turned on for your application. To do this you may need to [contact Pusher support](mailto:support@pusher.com).
